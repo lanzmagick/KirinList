@@ -1,0 +1,71 @@
+name: KirinList Test Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/test-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kirinlist-test-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Build universal FOSS test APK
+        run: |
+          chmod +x gradlew
+          sed -i -e '/isEnable = true/s/true/false/' app/build.gradle.kts
+          ./gradlew :app:assembleFossDebug --no-daemon
+
+      - name: Prepare test release
+        id: release
+        run: |
+          VERSION=$(sed -n 's/^name *= *//p' version.properties | tr -d '\r')
+          SHORT_SHA=${GITHUB_SHA:0:7}
+          TAG="test-${VERSION}-${SHORT_SHA}"
+          APK_NAME="KirinList-${VERSION}-test-${SHORT_SHA}.apk"
+          shopt -s nullglob
+          APK_FILES=(app/build/outputs/apk/foss/debug/*.apk)
+          if [ "${#APK_FILES[@]}" -ne 1 ]; then
+            echo "Expected one universal APK, found ${#APK_FILES[@]}"
+            exit 1
+          fi
+          mkdir -p release-apk
+          cp "${APK_FILES[0]}" "release-apk/${APK_NAME}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish test pre-release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: KirinList ${{ steps.release.outputs.version }} - RGB FAB Test
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: release-apk/*.apk
+          body: |
+            Test build with KirinList branding and RGB borders on the anime and manga list floating buttons.
+
+            The RGB border logic is taken from KirinMaL. Colors change on each button press and list selection change.
+
+            Universal FOSS debug APK for testing on Android 7.0 and newer.
+
+            Source commit: ${{ github.sha }}
