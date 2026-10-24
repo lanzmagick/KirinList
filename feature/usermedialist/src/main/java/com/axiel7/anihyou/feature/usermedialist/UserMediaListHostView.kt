@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +58,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -99,6 +102,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.random.Random
 
 @Composable
 fun UserMediaListHostView(
@@ -482,11 +486,32 @@ private fun FloatingActionButton(
     showListsSheet: () -> Unit,
     scrollToTop: () -> Unit,
 ) {
+    // RGB border logic ported from KirinMaL's ListStatusFab.
+    var borderHue by remember(uiState.mediaType) { mutableStateOf(Random.nextFloat() * 360f) }
+    val selection = uiState.status to uiState.selectedListName
+    var borderSelection by remember(uiState.mediaType) { mutableStateOf(selection) }
+
+    fun randomizeBorder() {
+        // Keep at least a 60-degree gap so every press visibly changes the hue.
+        borderHue = (borderHue + 60f + Random.nextFloat() * 240f) % 360f
+        borderSelection = selection
+    }
+
+    // Also handle status and custom-list changes made through the selection sheet.
+    LaunchedEffect(uiState.mediaType, selection) {
+        if (borderSelection != selection) randomizeBorder()
+    }
+    val borderColor = Color.hsv(hue = borderHue, saturation = 0.9f, value = 1f)
+    val fabShape = FloatingActionButtonDefaults.shape
+
     ExtendedFloatingActionButton(
         onClick = {
+            randomizeBorder()
             if (isScrollingUp) scrollToTop()
             else showListsSheet()
         },
+        modifier = Modifier.border(width = 1.5.dp, color = borderColor, shape = fabShape),
+        shape = fabShape,
         expanded = !isScrollingUp,
         text = {
             Text(
