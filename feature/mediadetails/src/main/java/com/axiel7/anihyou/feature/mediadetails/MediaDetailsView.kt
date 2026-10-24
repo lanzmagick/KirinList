@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -30,6 +31,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -132,6 +134,7 @@ import com.materialkolor.material3.dynamicColorScheme
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.random.Random
 
 @Composable
 fun MediaDetailsView(
@@ -340,7 +343,32 @@ private fun MediaDetailsContent(
         },
         floatingActionButton = {
             if (uiState.isLoggedIn && uiState.details != null) {
-                ExtendedFloatingActionButton(onClick = { showEditSheet = true }) {
+                // Use the same KirinMaL RGB border logic as the anime and manga list FABs.
+                val mediaId = uiState.details.basicMediaDetails.id
+                val listStatus = uiState.details.mediaListEntry?.basicMediaListEntry?.status
+                var borderHue by remember(mediaId) { mutableStateOf(Random.nextFloat() * 360f) }
+                var borderStatus by remember(mediaId) { mutableStateOf(listStatus) }
+
+                fun randomizeBorder() {
+                    // Keep at least a 60-degree gap so every press visibly changes the hue.
+                    borderHue = (borderHue + 60f + Random.nextFloat() * 240f) % 360f
+                    borderStatus = listStatus
+                }
+
+                LaunchedEffect(mediaId, listStatus) {
+                    if (borderStatus != listStatus) randomizeBorder()
+                }
+                val borderColor = Color.hsv(hue = borderHue, saturation = 0.9f, value = 1f)
+                val fabShape = FloatingActionButtonDefaults.shape
+
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        randomizeBorder()
+                        showEditSheet = true
+                    },
+                    modifier = Modifier.border(width = 1.5.dp, color = borderColor, shape = fabShape),
+                    shape = fabShape,
+                ) {
                     Icon(
                         painter = painterResource(
                             if (uiState.isNewEntry) R.drawable.add_24
