@@ -1,1 +1,1 @@
-AniHyou - Klient AniList
+KirinList - Klient AniList

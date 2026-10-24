@@ -1,1 +1,1 @@
-AniHyou - AniList İstemcisi
+KirinList - AniList İstemcisi
