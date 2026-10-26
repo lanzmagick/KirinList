@@ -3,8 +3,12 @@ package com.axiel7.anihyou.feature.usermedialist
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
@@ -14,6 +18,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,6 +56,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,7 +64,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -102,7 +110,6 @@ import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinActivityViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.random.Random
 
 @Composable
 fun UserMediaListHostView(
@@ -486,32 +493,60 @@ private fun FloatingActionButton(
     showListsSheet: () -> Unit,
     scrollToTop: () -> Unit,
 ) {
-    // RGB border logic ported from KirinMaL's ListStatusFab.
-    var borderHue by remember(uiState.mediaType) { mutableStateOf(Random.nextFloat() * 360f) }
+    // KirinList's own continuously moving RGB fill and outline for both media lists.
+    val rainbow = rememberInfiniteTransition(label = "listFabRainbow")
+    val hueRotation by rainbow.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 10000, easing = LinearEasing)
+        ),
+        label = "listFabHueRotation",
+    )
+    var hueOffset by remember(uiState.mediaType) { mutableFloatStateOf(0f) }
     val selection = uiState.status to uiState.selectedListName
-    var borderSelection by remember(uiState.mediaType) { mutableStateOf(selection) }
+    var previousSelection by remember(uiState.mediaType) { mutableStateOf(selection) }
 
-    fun randomizeBorder() {
-        // Keep at least a 60-degree gap so every press visibly changes the hue.
-        borderHue = (borderHue + 60f + Random.nextFloat() * 240f) % 360f
-        borderSelection = selection
+    fun shiftRainbow() {
+        // Change the starting colors on every press without resetting the animation.
+        hueOffset = (hueOffset + 85f) % 360f
     }
 
-    // Also handle status and custom-list changes made through the selection sheet.
     LaunchedEffect(uiState.mediaType, selection) {
-        if (borderSelection != selection) randomizeBorder()
+        if (previousSelection != selection) {
+            shiftRainbow()
+            previousSelection = selection
+        }
     }
-    val borderColor = Color.hsv(hue = borderHue, saturation = 0.9f, value = 1f)
+
+    val hue = (hueRotation + hueOffset) % 360f
+    val originalFill = MaterialTheme.colorScheme.primaryContainer
+    val fillBrush = Brush.linearGradient(
+        colors = listOf(0f, 120f, 240f, 360f).map { step ->
+            Color.hsv((hue + step) % 360f, saturation = 0.95f, value = 1f)
+                .copy(alpha = 0.38f)
+                .compositeOver(originalFill)
+        }
+    )
+    val borderBrush = Brush.sweepGradient(
+        colors = listOf(0f, 90f, 180f, 270f, 360f).map { step ->
+            Color.hsv((hue + step) % 360f, saturation = 0.95f, value = 1f)
+        }
+    )
     val fabShape = FloatingActionButtonDefaults.shape
 
     ExtendedFloatingActionButton(
         onClick = {
-            randomizeBorder()
+            shiftRainbow()
             if (isScrollingUp) scrollToTop()
             else showListsSheet()
         },
-        modifier = Modifier.border(width = 1.5.dp, color = borderColor, shape = fabShape),
+        modifier = Modifier
+            .background(brush = fillBrush, shape = fabShape)
+            .border(width = 1.5.dp, brush = borderBrush, shape = fabShape),
         shape = fabShape,
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         expanded = !isScrollingUp,
         text = {
             Text(
