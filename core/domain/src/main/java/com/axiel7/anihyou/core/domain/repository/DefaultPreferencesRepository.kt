@@ -381,6 +381,22 @@ class DefaultPreferencesRepository(
         dataStore.setValue(COLORED_MEDIA, value)
     }
 
+    // Independent, persisted KirinList RGB effects.
+    val rgbProgressEnabled = dataStore.getValue(RGB_PROGRESS_ENABLED_KEY, default = true)
+    suspend fun setRgbProgressEnabled(value: Boolean) {
+        dataStore.setValue(RGB_PROGRESS_ENABLED_KEY, value)
+    }
+
+    val rgbFabFillEnabled = dataStore.getValue(RGB_FAB_FILL_ENABLED_KEY, default = true)
+    suspend fun setRgbFabFillEnabled(value: Boolean) {
+        dataStore.setValue(RGB_FAB_FILL_ENABLED_KEY, value)
+    }
+
+    val rgbFabBorderEnabled = dataStore.getValue(RGB_FAB_BORDER_ENABLED_KEY, default = true)
+    suspend fun setRgbFabBorderEnabled(value: Boolean) {
+        dataStore.setValue(RGB_FAB_BORDER_ENABLED_KEY, value)
+    }
+
     val translatorApp = dataStore.getValue(TRANSLATOR_APP_KEY, default = TranslatorApp.DEFAULT.name)
         .map { TranslatorApp.valueOf(it) }
 
@@ -473,6 +489,10 @@ class DefaultPreferencesRepository(
         private val COLOR_PALETTE_KEY = stringPreferencesKey("color_palette")
 
         private val COLORED_MEDIA = booleanPreferencesKey("colored_media")
+
+        private val RGB_PROGRESS_ENABLED_KEY = booleanPreferencesKey("kirinlist_rgb_progress")
+        private val RGB_FAB_FILL_ENABLED_KEY = booleanPreferencesKey("kirinlist_rgb_fab_fill")
+        private val RGB_FAB_BORDER_ENABLED_KEY = booleanPreferencesKey("kirinlist_rgb_fab_border")
 
         private val TRANSLATOR_APP_KEY = stringPreferencesKey("translator_app")
         private val HIDE_SCORES_KEY = booleanPreferencesKey("hide_scores")

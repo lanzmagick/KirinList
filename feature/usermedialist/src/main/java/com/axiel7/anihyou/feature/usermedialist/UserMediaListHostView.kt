@@ -52,6 +52,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
@@ -66,6 +67,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -88,6 +90,7 @@ import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
+import com.axiel7.anihyou.core.ui.common.LocalRgbProgressEnabled
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.chip.FilterChipWithMenu
@@ -271,45 +274,47 @@ private fun UserMediaListHostContent(
                 targetValue = if (isScrolled) 4.dp else 0.dp,
                 label = "headerElevation"
             )
-            ListAiringClock(
-                enabled = uiState.mediaType == MediaType.ANIME &&
-                    uiState.entries.any { it.media?.nextAiringEpisode != null },
-                entries = uiState.entries,
-                onAiringDue = { event?.refreshList() },
-            ) {
-                UserMediaListView(
-                    uiState = uiState,
-                    event = event,
-                    isCompactScreen = isCompactScreen,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    contentPadding = if (!uiState.isMyList)
-                        PaddingValues(bottom = 58.dp + padding.calculateBottomPadding())
-                    else PaddingValues(bottom = 58.dp),
-                    defaultNovelTab = defaultNovelTab,
-                    navActionManager = navActionManager,
-                    onShowEditSheet = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        event?.selectItem(it)
-                        showEditSheet = true
-                    },
-                    lazyListState = listState,
-                    lazyGridState = gridState,
-                    stickyHeaderContent = {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = headerColor,
-                            shadowElevation = headerElevation
-                        ) {
-                            FilterBlock(
-                                uiState = uiState,
-                                isSearchFocused = isSearchFocused,
-                                event = event
-                            )
+            CompositionLocalProvider(LocalRgbProgressEnabled provides uiState.rgbProgressEnabled) {
+                ListAiringClock(
+                    enabled = uiState.mediaType == MediaType.ANIME &&
+                        uiState.entries.any { it.media?.nextAiringEpisode != null },
+                    entries = uiState.entries,
+                    onAiringDue = { event?.refreshList() },
+                ) {
+                    UserMediaListView(
+                        uiState = uiState,
+                        event = event,
+                        isCompactScreen = isCompactScreen,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        contentPadding = if (!uiState.isMyList)
+                            PaddingValues(bottom = 58.dp + padding.calculateBottomPadding())
+                        else PaddingValues(bottom = 58.dp),
+                        defaultNovelTab = defaultNovelTab,
+                        navActionManager = navActionManager,
+                        onShowEditSheet = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            event?.selectItem(it)
+                            showEditSheet = true
+                        },
+                        lazyListState = listState,
+                        lazyGridState = gridState,
+                        stickyHeaderContent = {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = headerColor,
+                                shadowElevation = headerElevation
+                            ) {
+                                FilterBlock(
+                                    uiState = uiState,
+                                    isSearchFocused = isSearchFocused,
+                                    event = event
+                                )
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }//: Column
     }//: Scaffold
@@ -500,23 +505,26 @@ private fun FloatingActionButton(
     showListsSheet: () -> Unit,
     scrollToTop: () -> Unit,
 ) {
-    // KirinList's own continuously moving RGB fill and outline for both media lists.
-    val rainbow = rememberInfiniteTransition(label = "listFabRainbow")
-    val hueRotation by rainbow.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 10000, easing = LinearEasing)
-        ),
-        label = "listFabHueRotation",
-    )
+    // Animate only while at least one RGB effect is enabled.
+    val hueRotation = if (uiState.rgbFabFillEnabled || uiState.rgbFabBorderEnabled) {
+        val rainbow = rememberInfiniteTransition(label = "listFabRainbow")
+        val hue by rainbow.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 10000, easing = LinearEasing)
+            ),
+            label = "listFabHueRotation",
+        )
+        hue
+    } else 0f
     var hueOffset by remember(uiState.mediaType) { mutableFloatStateOf(0f) }
     val selection = uiState.status to uiState.selectedListName
     var previousSelection by remember(uiState.mediaType) { mutableStateOf(selection) }
 
     fun shiftRainbow() {
-        // Change the starting colors on every press without resetting the animation.
-        hueOffset = (hueOffset + 85f) % 360f
+        // Explicit tap/selection hue change is scoped to the border RGB toggle.
+        if (uiState.rgbFabBorderEnabled) hueOffset = (hueOffset + 85f) % 360f
     }
 
     LaunchedEffect(uiState.mediaType, selection) {
@@ -526,20 +534,23 @@ private fun FloatingActionButton(
         }
     }
 
-    val hue = (hueRotation + hueOffset) % 360f
     val originalFill = MaterialTheme.colorScheme.primaryContainer
-    val fillBrush = Brush.linearGradient(
-        colors = listOf(0f, 120f, 240f, 360f).map { step ->
-            Color.hsv((hue + step) % 360f, saturation = 0.95f, value = 1f)
-                .copy(alpha = 0.38f)
-                .compositeOver(originalFill)
-        }
-    )
-    val borderBrush = Brush.sweepGradient(
-        colors = listOf(0f, 90f, 180f, 270f, 360f).map { step ->
-            Color.hsv((hue + step) % 360f, saturation = 0.95f, value = 1f)
-        }
-    )
+    val fillBrush = if (uiState.rgbFabFillEnabled) {
+        Brush.linearGradient(
+            colors = listOf(0f, 120f, 240f, 360f).map { step ->
+                Color.hsv((hueRotation + step) % 360f, saturation = 0.95f, value = 1f)
+                    .copy(alpha = 0.38f)
+                    .compositeOver(originalFill)
+            }
+        )
+    } else SolidColor(originalFill)
+    val borderBrush = if (uiState.rgbFabBorderEnabled) {
+        Brush.sweepGradient(
+            colors = listOf(0f, 90f, 180f, 270f, 360f).map { step ->
+                Color.hsv((hueRotation + hueOffset + step) % 360f, saturation = 0.95f, value = 1f)
+            }
+        )
+    } else SolidColor(MaterialTheme.colorScheme.outlineVariant)
     val fabShape = FloatingActionButtonDefaults.shape
 
     ExtendedFloatingActionButton(

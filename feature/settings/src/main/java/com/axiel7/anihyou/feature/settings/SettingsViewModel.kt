@@ -99,6 +99,18 @@ class SettingsViewModel(
         }
     }
 
+    override fun setRgbProgressEnabled(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setRgbProgressEnabled(value) }
+    }
+
+    override fun setRgbFabFillEnabled(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setRgbFabFillEnabled(value) }
+    }
+
+    override fun setRgbFabBorderEnabled(value: Boolean) {
+        viewModelScope.launch { defaultPreferencesRepository.setRgbFabBorderEnabled(value) }
+    }
+
     override fun setUseGeneralListStyle(value: Boolean) {
         viewModelScope.launch {
             listPreferencesRepository.setUseGeneralListStyle(value)
@@ -331,6 +343,18 @@ class SettingsViewModel(
             .onEach { value ->
                 mutableUiState.update { it.copy(coloredMedia = value) }
             }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.rgbProgressEnabled
+            .onEach { value -> mutableUiState.update { it.copy(rgbProgressEnabled = value) } }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.rgbFabFillEnabled
+            .onEach { value -> mutableUiState.update { it.copy(rgbFabFillEnabled = value) } }
+            .launchIn(viewModelScope)
+
+        defaultPreferencesRepository.rgbFabBorderEnabled
+            .onEach { value -> mutableUiState.update { it.copy(rgbFabBorderEnabled = value) } }
             .launchIn(viewModelScope)
 
         defaultPreferencesRepository.blurAdult

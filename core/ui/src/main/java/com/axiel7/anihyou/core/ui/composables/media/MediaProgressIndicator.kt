@@ -3,10 +3,12 @@ package com.axiel7.anihyou.core.ui.composables.media
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.TextUnit
@@ -21,6 +23,7 @@ import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.network.type.MediaFormat
 import com.axiel7.anihyou.core.network.type.MediaStatus
 import com.axiel7.anihyou.core.network.type.MediaType
+import com.axiel7.anihyou.core.ui.common.LocalRgbProgressEnabled
 import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.minutesToLegibleText
 import com.axiel7.anihyou.core.resources.R
 
@@ -37,6 +40,11 @@ fun MediaProgressIndicator(
     val duration = item.duration()?.format()
     val isNotYetReleased = item.media?.status == MediaStatus.NOT_YET_RELEASED
     val episodeDuration = item.media?.basicMediaDetails?.duration
+    val stageColor = kirinProgressStageColor(
+        progress = item.basicMediaListEntry.progressOrVolumes() ?: 0,
+        total = item.duration(),
+        enabled = LocalRgbProgressEnabled.current
+    )
 
     val progressText = when {
         isNotYetReleased -> null
@@ -72,12 +80,14 @@ fun MediaProgressIndicator(
     ) {
         Icon(
             painter = painterResource(iconRes),
-            contentDescription = stringResource(contentDescRes)
+            contentDescription = stringResource(contentDescRes),
+            tint = stageColor ?: LocalContentColor.current
         )
         Text(
             text = progressText,
             fontSize = fontSize,
-            maxLines = 1
+            maxLines = 1,
+            color = stageColor ?: Color.Unspecified
         )
     }
 }

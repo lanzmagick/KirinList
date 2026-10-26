@@ -289,6 +289,13 @@
     <string name="airing_anime_notifications">Airing anime notifications</string>
     <string name="color">Color</string>
     <string name="color_palette">Color palette</string>
+    <string name="kirinlist_rgb_settings">KirinList RGB effects</string>
+    <string name="kirinlist_rgb_progress">Multi-color episode and chapter progress</string>
+    <string name="kirinlist_rgb_progress_desc">Colors change with progress stages. Entries without progress retain their original look.</string>
+    <string name="kirinlist_rgb_fab_fill">RGB list button fill</string>
+    <string name="kirinlist_rgb_fab_fill_desc">Animated colors inside the Anime and Manga list button.</string>
+    <string name="kirinlist_rgb_fab_border">RGB list button border</string>
+    <string name="kirinlist_rgb_fab_border_desc">Animated border that shifts its colors whenever the button is pressed.</string>
     <string name="discover">Discover</string>
     <string name="default_home_tab">Default Home tab</string>
     <string name="text_status">Text Status</string>

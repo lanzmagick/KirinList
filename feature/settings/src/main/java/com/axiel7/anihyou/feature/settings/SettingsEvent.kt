@@ -30,6 +30,12 @@ interface SettingsEvent : UiEvent {
 
     fun setColoredMedia(value: Boolean)
 
+    fun setRgbProgressEnabled(value: Boolean)
+
+    fun setRgbFabFillEnabled(value: Boolean)
+
+    fun setRgbFabBorderEnabled(value: Boolean)
+
     fun setCustomAppColor(color: Color)
 
     fun setUseGeneralListStyle(value: Boolean)

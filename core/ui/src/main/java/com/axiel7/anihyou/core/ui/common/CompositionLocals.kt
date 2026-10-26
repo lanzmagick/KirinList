@@ -15,6 +15,9 @@ val LocalIsLanguageEn = staticCompositionLocalOf {
 
 val LocalBlurAdult = staticCompositionLocalOf { true }
 
+/** List-scoped effect; other progress labels keep their existing appearance. */
+val LocalRgbProgressEnabled = staticCompositionLocalOf { false }
+
 val LocalScoreFormat = staticCompositionLocalOf { ScoreFormat.POINT_10_DECIMAL }
 
 val LocalHideScores = staticCompositionLocalOf { false }

@@ -216,6 +216,35 @@ private fun SettingsContent(
                 shape = bottomShape
             )
 
+            PreferencesTitle(text = stringResource(R.string.kirinlist_rgb_settings))
+
+            SwitchPreference(
+                title = stringResource(R.string.kirinlist_rgb_progress),
+                subtitle = stringResource(R.string.kirinlist_rgb_progress_desc),
+                preferenceValue = uiState.rgbProgressEnabled,
+                icon = R.drawable.colors_24,
+                onValueChange = { event?.setRgbProgressEnabled(it) },
+                shape = topShape
+            )
+
+            SwitchPreference(
+                title = stringResource(R.string.kirinlist_rgb_fab_fill),
+                subtitle = stringResource(R.string.kirinlist_rgb_fab_fill_desc),
+                preferenceValue = uiState.rgbFabFillEnabled,
+                icon = R.drawable.format_color_fill_24,
+                onValueChange = { event?.setRgbFabFillEnabled(it) },
+                shape = middleShape
+            )
+
+            SwitchPreference(
+                title = stringResource(R.string.kirinlist_rgb_fab_border),
+                subtitle = stringResource(R.string.kirinlist_rgb_fab_border_desc),
+                preferenceValue = uiState.rgbFabBorderEnabled,
+                icon = R.drawable.format_paint_24,
+                onValueChange = { event?.setRgbFabBorderEnabled(it) },
+                shape = bottomShape
+            )
+
             PreferencesTitle(text = stringResource(R.string.content))
 
             if (uiState.isLoggedIn) {

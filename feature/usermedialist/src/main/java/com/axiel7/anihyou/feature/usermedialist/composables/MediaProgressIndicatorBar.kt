@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+import com.axiel7.anihyou.core.ui.common.LocalRgbProgressEnabled
+import com.axiel7.anihyou.core.ui.composables.media.kirinProgressStageColor
 import com.axiel7.anihyou.core.network.type.MediaFormat
 import kotlin.math.exp
 
@@ -55,23 +57,9 @@ fun MediaProgressIndicatorBar(
         (fillRatio * horizon)
     }
 
-    // Apply the same progress stages to anime episodes and manga chapters/volumes.
-    // Zero progress and unknown totals retain their original theme color.
-    val completedColor = remember(progress, total, indicatorColor) {
-        when {
-            progress <= 0 || total == null || total <= 0 -> indicatorColor
-            else -> {
-                val ratio = (progress.toFloat() / total).coerceIn(0f, 1f)
-                when {
-                    ratio < 0.20f -> Color(0xFFFF526B) // Red: 1–19%
-                    ratio < 0.40f -> Color(0xFFFF9D35) // Orange: 20–39%
-                    ratio < 0.60f -> Color(0xFFFFD54F) // Yellow: 40–59%
-                    ratio < 0.80f -> Color(0xFF39DB8A) // Green: 60–79%
-                    ratio < 1f -> Color(0xFF00CFFF)    // Cyan: 80–99%
-                    else -> Color(0xFFB65CFF)         // Purple: 100%
-                }
-            }
-        }
+    val rgbProgressEnabled = LocalRgbProgressEnabled.current
+    val completedColor = remember(progress, total, rgbProgressEnabled, indicatorColor) {
+        kirinProgressStageColor(progress, total, rgbProgressEnabled) ?: indicatorColor
     }
 
     Canvas(modifier = modifier.height(4.dp)) {
@@ -176,7 +164,7 @@ fun MediaProgressIndicatorBar(
 
                 if (progress < safeReleased) {
                     drawLine(
-                        color = indicatorColor,
+                        color = completedColor,
                         start = Offset(radius, y),
                         end = Offset(completedDrawEnd, y),
                         strokeWidth = stroke,
@@ -199,8 +187,8 @@ fun MediaProgressIndicatorBar(
                 } else {
                     val brush = Brush.horizontalGradient(
                         colorStops = arrayOf(
-                            0.0f to indicatorColor,
-                            0.7f to indicatorColor,
+                            0.0f to completedColor,
+                            0.7f to completedColor,
                             1.0f to Color.Transparent
                         ),
                         startX = 0f,

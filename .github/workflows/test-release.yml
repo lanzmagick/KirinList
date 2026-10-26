@@ -28,11 +28,11 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Build universal FOSS test APK
+      - name: Test progress colors and build universal FOSS APK
         run: |
           chmod +x gradlew
           sed -i -e '/isEnable = true/s/true/false/' app/build.gradle.kts
-          ./gradlew :app:assembleFossDebug --no-daemon
+          ./gradlew :core:ui:testDebugUnitTest :app:assembleFossDebug --no-daemon
 
       - name: Prepare test release
         id: release
@@ -57,14 +57,16 @@ jobs:
         with:
           tag_name: ${{ steps.release.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          name: KirinList ${{ steps.release.outputs.version }} - Latest UI Test
+          name: KirinList ${{ steps.release.outputs.version }} - RGB Controls Test
           prerelease: true
           fail_on_unmatched_files: true
           files: release-apk/*.apk
           body: |
             KirinList UI preview build, including:
-            - Original KirinList animated RGB fill and outline for anime/manga list buttons.
-            - Multi-color chapter and episode progress stages.
+            - Three independent Settings switches for progress colors, FAB RGB fill and FAB RGB border.
+            - Tap the Anime/Manga list FAB to shift its border RGB colors.
+            - Multi-color chapter, volume and episode stages in Standard, Compact, Grid and Minimal list styles.
+            - Count-based color stages for entries whose total episodes/chapters are unknown; zero progress remains unchanged.
             - Realtime airing countdown with the existing episodes-behind logic preserved.
             - New-notification bell shake, pulse dot, and persistent dismissal across app relaunches.
             - Lightweight glossy-glass reflections across image thumbnails.
