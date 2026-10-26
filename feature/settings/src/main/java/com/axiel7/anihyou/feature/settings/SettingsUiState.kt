@@ -23,7 +23,6 @@ data class SettingsUiState(
     val colorPaletteStyle: PaletteStyle = PaletteStyle.Expressive,
     val coloredMedia: Boolean = true,
     val rgbProgressEnabled: Boolean = true,
-    val rgbFabFillEnabled: Boolean = true,
     val rgbFabBorderEnabled: Boolean = true,
     val blurAdultContent: Boolean = true,
     val showLowPriority: Boolean = false,

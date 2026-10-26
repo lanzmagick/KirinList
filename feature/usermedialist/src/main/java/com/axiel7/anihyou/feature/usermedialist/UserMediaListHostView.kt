@@ -71,7 +71,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -510,8 +509,8 @@ private fun FloatingActionButton(
     showListsSheet: () -> Unit,
     scrollToTop: () -> Unit,
 ) {
-    // Animate only while at least one RGB effect is enabled.
-    val hueRotation = if (uiState.rgbFabFillEnabled || uiState.rgbFabBorderEnabled) {
+    // Border RGB animates only when its setting is enabled.
+    val hueRotation = if (uiState.rgbFabBorderEnabled) {
         val rainbow = rememberInfiniteTransition(label = "listFabRainbow")
         val hue by rainbow.animateFloat(
             initialValue = 0f,
@@ -540,15 +539,6 @@ private fun FloatingActionButton(
     }
 
     val originalFill = MaterialTheme.colorScheme.primaryContainer
-    val fillBrush = if (uiState.rgbFabFillEnabled) {
-        Brush.linearGradient(
-            colors = listOf(0f, 120f, 240f, 360f).map { step ->
-                Color.hsv((hueRotation + step) % 360f, saturation = 0.95f, value = 1f)
-                    .copy(alpha = 0.38f)
-                    .compositeOver(originalFill)
-            }
-        )
-    } else SolidColor(originalFill)
     val borderBrush = if (uiState.rgbFabBorderEnabled) {
         Brush.sweepGradient(
             colors = listOf(0f, 90f, 180f, 270f, 360f).map { step ->
@@ -558,16 +548,14 @@ private fun FloatingActionButton(
     } else SolidColor(MaterialTheme.colorScheme.outlineVariant)
     val fabShape = FloatingActionButtonDefaults.shape
 
-    // Draw the entire FAB as one clipped surface. ExtendedFloatingActionButton
-    // adds its own opaque content surface, which showed up as a square inside
-    // KirinList's RGB pill on some devices/themes.
+    // One clipped surface: a plain theme fill with only the optional RGB border.
     val foregroundColor = MaterialTheme.colorScheme.onPrimaryContainer
     Row(
         modifier = Modifier
             .animateContentSize()
             .shadow(6.dp, fabShape)
             .clip(fabShape)
-            .background(brush = fillBrush, shape = fabShape)
+            .background(color = originalFill, shape = fabShape)
             .border(width = 1.5.dp, brush = borderBrush, shape = fabShape)
             .clickable(role = Role.Button) {
                 shiftRainbow()

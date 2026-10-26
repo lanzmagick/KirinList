@@ -31,7 +31,6 @@ data class UserMediaListUiState(
     val isMyList: Boolean = true,
     val showLowPriority: Boolean = false,
     val rgbProgressEnabled: Boolean = true,
-    val rgbFabFillEnabled: Boolean = true,
     val rgbFabBorderEnabled: Boolean = true,
     val lowPriorityColor: Color? = null,
     val mediumPriorityColor: Color? = null,

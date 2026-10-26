@@ -103,10 +103,6 @@ class SettingsViewModel(
         viewModelScope.launch { defaultPreferencesRepository.setRgbProgressEnabled(value) }
     }
 
-    override fun setRgbFabFillEnabled(value: Boolean) {
-        viewModelScope.launch { defaultPreferencesRepository.setRgbFabFillEnabled(value) }
-    }
-
     override fun setRgbFabBorderEnabled(value: Boolean) {
         viewModelScope.launch { defaultPreferencesRepository.setRgbFabBorderEnabled(value) }
     }
@@ -347,10 +343,6 @@ class SettingsViewModel(
 
         defaultPreferencesRepository.rgbProgressEnabled
             .onEach { value -> mutableUiState.update { it.copy(rgbProgressEnabled = value) } }
-            .launchIn(viewModelScope)
-
-        defaultPreferencesRepository.rgbFabFillEnabled
-            .onEach { value -> mutableUiState.update { it.copy(rgbFabFillEnabled = value) } }
             .launchIn(viewModelScope)
 
         defaultPreferencesRepository.rgbFabBorderEnabled

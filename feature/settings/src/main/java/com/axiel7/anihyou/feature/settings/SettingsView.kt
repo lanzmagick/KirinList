@@ -228,15 +228,6 @@ private fun SettingsContent(
             )
 
             SwitchPreference(
-                title = stringResource(R.string.kirinlist_rgb_fab_fill),
-                subtitle = stringResource(R.string.kirinlist_rgb_fab_fill_desc),
-                preferenceValue = uiState.rgbFabFillEnabled,
-                icon = R.drawable.format_color_fill_24,
-                onValueChange = { event?.setRgbFabFillEnabled(it) },
-                shape = middleShape
-            )
-
-            SwitchPreference(
                 title = stringResource(R.string.kirinlist_rgb_fab_border),
                 subtitle = stringResource(R.string.kirinlist_rgb_fab_border_desc),
                 preferenceValue = uiState.rgbFabBorderEnabled,

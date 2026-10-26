@@ -634,11 +634,6 @@ class UserMediaListViewModel(
             .onEach { value -> mutableUiState.update { it.copy(rgbProgressEnabled = value) } }
             .launchIn(viewModelScope)
 
-        defaultPreferencesRepository.rgbFabFillEnabled
-            .distinctUntilChanged()
-            .onEach { value -> mutableUiState.update { it.copy(rgbFabFillEnabled = value) } }
-            .launchIn(viewModelScope)
-
         defaultPreferencesRepository.rgbFabBorderEnabled
             .distinctUntilChanged()
             .onEach { value -> mutableUiState.update { it.copy(rgbFabBorderEnabled = value) } }

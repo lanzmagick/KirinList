@@ -57,13 +57,14 @@ jobs:
         with:
           tag_name: ${{ steps.release.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          name: KirinList ${{ steps.release.outputs.version }} - RGB Controls Test
+          name: KirinList ${{ steps.release.outputs.version }} - Border RGB Only Test
           prerelease: true
           fail_on_unmatched_files: true
           files: release-apk/*.apk
           body: |
             KirinList UI preview build, including:
-            - Three independent Settings switches for progress colors, FAB RGB fill and FAB RGB border.
+            - Two independent Settings switches for progress colors and FAB RGB border.
+            - The Anime/Manga list FAB uses its normal app-theme fill without inner RGB.
             - Tap the Anime/Manga list FAB to shift its border RGB colors.
             - Fix the rectangular inner background on the All list button by drawing one rounded FAB surface.
             - Multi-color chapter, volume and episode stages in Standard, Compact, Grid and Minimal list styles.
