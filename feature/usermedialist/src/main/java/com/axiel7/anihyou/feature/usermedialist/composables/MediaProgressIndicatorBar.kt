@@ -55,6 +55,25 @@ fun MediaProgressIndicatorBar(
         (fillRatio * horizon)
     }
 
+    // Apply the same progress stages to anime episodes and manga chapters/volumes.
+    // Zero progress and unknown totals retain their original theme color.
+    val completedColor = remember(progress, total, indicatorColor) {
+        when {
+            progress <= 0 || total == null || total <= 0 -> indicatorColor
+            else -> {
+                val ratio = (progress.toFloat() / total).coerceIn(0f, 1f)
+                when {
+                    ratio < 0.20f -> Color(0xFFFF526B) // Red: 1–19%
+                    ratio < 0.40f -> Color(0xFFFF9D35) // Orange: 20–39%
+                    ratio < 0.60f -> Color(0xFFFFD54F) // Yellow: 40–59%
+                    ratio < 0.80f -> Color(0xFF39DB8A) // Green: 60–79%
+                    ratio < 1f -> Color(0xFF00CFFF)    // Cyan: 80–99%
+                    else -> Color(0xFFB65CFF)         // Purple: 100%
+                }
+            }
+        }
+    }
+
     Canvas(modifier = modifier.height(4.dp)) {
         val w = size.width
         val stroke = size.height
@@ -88,7 +107,7 @@ fun MediaProgressIndicatorBar(
                 }
             } else if (completedRatio == 1f) {
                 drawLine(
-                    color = indicatorColor,
+                    color = completedColor,
                     start = Offset(radius, y),
                     end = Offset(w - radius, y),
                     strokeWidth = stroke,
@@ -108,7 +127,7 @@ fun MediaProgressIndicatorBar(
 
                 val completedDrawEnd = completedPillWidth - radius
                 drawLine(
-                    color = indicatorColor,
+                    color = completedColor,
                     start = Offset(radius, y),
                     end = Offset(completedDrawEnd, y),
                     strokeWidth = stroke,
