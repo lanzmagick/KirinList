@@ -65,6 +65,7 @@ jobs:
             KirinList UI preview build, including:
             - Three independent Settings switches for progress colors, FAB RGB fill and FAB RGB border.
             - Tap the Anime/Manga list FAB to shift its border RGB colors.
+            - Fix the rectangular inner background on the All list button by drawing one rounded FAB surface.
             - Multi-color chapter, volume and episode stages in Standard, Compact, Grid and Minimal list styles.
             - Count-based color stages for entries whose total episodes/chapters are unknown; zero progress remains unchanged.
             - Realtime airing countdown with the existing episodes-behind logic preserved.

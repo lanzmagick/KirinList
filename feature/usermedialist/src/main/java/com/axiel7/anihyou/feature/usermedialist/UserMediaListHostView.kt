@@ -19,6 +19,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -40,7 +42,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -65,6 +66,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -76,6 +79,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -553,42 +558,52 @@ private fun FloatingActionButton(
     } else SolidColor(MaterialTheme.colorScheme.outlineVariant)
     val fabShape = FloatingActionButtonDefaults.shape
 
-    ExtendedFloatingActionButton(
-        onClick = {
-            shiftRainbow()
-            if (isScrollingUp) scrollToTop()
-            else showListsSheet()
-        },
+    // Draw the entire FAB as one clipped surface. ExtendedFloatingActionButton
+    // adds its own opaque content surface, which showed up as a square inside
+    // KirinList's RGB pill on some devices/themes.
+    val foregroundColor = MaterialTheme.colorScheme.onPrimaryContainer
+    Row(
         modifier = Modifier
+            .animateContentSize()
+            .shadow(6.dp, fabShape)
+            .clip(fabShape)
             .background(brush = fillBrush, shape = fabShape)
-            .border(width = 1.5.dp, brush = borderBrush, shape = fabShape),
-        shape = fabShape,
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        expanded = !isScrollingUp,
-        text = {
-            Text(
-                text = uiState.status?.localized(uiState.mediaType)
-                    ?: uiState.selectedListName ?: stringResource(R.string.all)
+            .border(width = 1.5.dp, brush = borderBrush, shape = fabShape)
+            .clickable(role = Role.Button) {
+                shiftRainbow()
+                if (isScrollingUp) scrollToTop() else showListsSheet()
+            }
+            .defaultMinSize(minWidth = 56.dp, minHeight = 56.dp)
+            .padding(horizontal = if (isScrollingUp) 16.dp else 20.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        if (isScrollingUp) {
+            Icon(
+                painter = painterResource(R.drawable.arrow_upward_24),
+                contentDescription = null,
+                tint = foregroundColor
             )
-        },
-        icon = {
-            if (isScrollingUp) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_upward_24),
-                    contentDescription = null,
-                )
-            } else if (uiState.selectedListName == null || uiState.status != null) {
+        } else {
+            if (uiState.selectedListName == null || uiState.status != null) {
                 Icon(
                     painter = painterResource(
                         id = uiState.status?.icon() ?: R.drawable.list_alt_24
                     ),
                     contentDescription = stringResource(R.string.list_status),
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = 8.dp),
+                    tint = foregroundColor
                 )
             }
+            Text(
+                text = uiState.status?.localized(uiState.mediaType)
+                    ?: uiState.selectedListName ?: stringResource(R.string.all),
+                color = foregroundColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-    )
+    }
 }
 
 @Preview
