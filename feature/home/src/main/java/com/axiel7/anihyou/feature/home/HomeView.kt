@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.material3.Badge
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,13 +26,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.axiel7.anihyou.core.common.utils.NumberUtils.format
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.axiel7.anihyou.core.model.HomeTab
 import com.axiel7.anihyou.core.resources.R
 import com.axiel7.anihyou.core.ui.common.LocalNavActionManager
 import com.axiel7.anihyou.core.ui.common.rememberSnackbarManager
 import com.axiel7.anihyou.core.ui.composables.DefaultScaffoldWithSmallTopAppBar
-import com.axiel7.anihyou.core.ui.composables.IconButtonWithBadge
 import com.axiel7.anihyou.core.ui.composables.rememberTopBarContainerColor
 import com.axiel7.anihyou.feature.home.activity.ActivityFeedView
 import com.axiel7.anihyou.feature.home.current.CurrentView
@@ -62,6 +60,15 @@ fun HomeView(
         viewModel.saveHomeTab(selectedTabIndex)
     }
 
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) viewModel.onLoggedOut()
+    }
+
+    LifecycleResumeEffect(isLoggedIn) {
+        if (isLoggedIn) viewModel.startBellMonitoring()
+        onPauseOrDispose { viewModel.stopBellMonitoring() }
+    }
+
     DefaultScaffoldWithSmallTopAppBar(
         title = stringResource(R.string.home),
         modifier = modifier,
@@ -83,16 +90,21 @@ fun HomeView(
                 val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle(
                     initialValue = 0
                 )
-                IconButtonWithBadge(
-                    icon = R.drawable.notifications_24,
-                    badge = {
-                        if (unreadNotificationCount > 0) {
-                            Badge {
-                                Text(text = unreadNotificationCount.format().orEmpty())
-                            }
-                        }
+                val hasNewNotification by viewModel.hasNewBellNotification.collectAsStateWithLifecycle()
+
+                LaunchedEffect(unreadNotificationCount) {
+                    if (unreadNotificationCount > 0) {
+                        viewModel.checkBellNotifications(unreadNotificationCount)
+                    }
+                }
+
+                NotificationBellAction(
+                    unreadCount = unreadNotificationCount,
+                    hasNewNotification = hasNewNotification,
+                    onClick = {
+                        viewModel.onBellPressed()
+                        navActionManager.toNotifications(unreadNotificationCount)
                     },
-                    onClick = { navActionManager.toNotifications(unreadNotificationCount) }
                 )
             }
         },

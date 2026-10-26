@@ -25,7 +25,8 @@ fun IconButtonWithBadge(
     @DrawableRes icon: Int,
     badge: @Composable (BoxScope.() -> Unit),
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
 ) {
     TextButton(
         onClick = onClick,
@@ -44,6 +45,7 @@ fun IconButtonWithBadge(
             Icon(
                 painter = painterResource(icon),
                 contentDescription = "badge",
+                modifier = iconModifier,
             )
         }
     }

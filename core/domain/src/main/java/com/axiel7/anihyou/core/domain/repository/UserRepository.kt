@@ -37,6 +37,14 @@ class UserRepository(
             it.data?.Viewer?.unreadNotificationCount
         }
 
+    // Foreground-only polling lets the Home bell detect newly arriving events
+    // even when an existing unread count has not changed in the UI.
+    suspend fun fetchUnreadNotificationCount() = api
+        .unreadNotificationCountQuery()
+        .fetchPolicy(FetchPolicy.NetworkOnly)
+        .execute()
+        .data?.Viewer?.unreadNotificationCount
+
     fun getViewerSettings() = api
         .viewerSettingsQuery()
         .toFlow()

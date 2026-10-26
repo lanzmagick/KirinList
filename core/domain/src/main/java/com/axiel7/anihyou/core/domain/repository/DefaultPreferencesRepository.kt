@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.axiel7.anihyou.core.domain.getValue
@@ -57,6 +58,11 @@ class DefaultPreferencesRepository(
 
     suspend fun saveViewerInfo(viewer: ViewerOptionsQuery.Viewer) {
         dataStore.edit {
+            if (it[USER_ID_KEY] != viewer.id) {
+                // Bell attention belongs to the signed-in account, not the device.
+                it.remove(LAST_ANIMATED_BELL_NOTIFICATION_ID_KEY)
+                it.remove(LAST_DISMISSED_BELL_EPOCH_KEY)
+            }
             it[USER_ID_KEY] = viewer.id
             it[DISPLAY_ADULT_KEY] = viewer.options?.displayAdultContent == true
             it[PROFILE_COLOR_KEY] = viewer.options?.profileColor ?: "#526CFD"
@@ -78,6 +84,8 @@ class DefaultPreferencesRepository(
             it.remove(ADVANCED_SCORING_KEY)
             it.remove(TITLE_LANGUAGE_KEY)
             it.remove(NOTIFICATIONS_ENABLED_KEY)
+            it.remove(LAST_ANIMATED_BELL_NOTIFICATION_ID_KEY)
+            it.remove(LAST_DISMISSED_BELL_EPOCH_KEY)
             it.remove(ANIME_SECTION_ORDER_KEY)
             it.remove(ANIME_CUSTOM_LISTS_KEY)
             it.remove(MANGA_SECTION_ORDER_KEY)
@@ -329,6 +337,21 @@ class DefaultPreferencesRepository(
         dataStore.setValue(LAST_NOTIFICATION_CREATED_AT_KEY, value)
     }
 
+    // Persist which new notification already woke up the Home bell animation.
+    val lastAnimatedBellNotificationId =
+        dataStore.getValue(LAST_ANIMATED_BELL_NOTIFICATION_ID_KEY, default = 0)
+
+    suspend fun setLastAnimatedBellNotificationId(value: Int) {
+        dataStore.setValue(LAST_ANIMATED_BELL_NOTIFICATION_ID_KEY, value)
+    }
+
+    val lastDismissedBellEpochSeconds =
+        dataStore.getValue(LAST_DISMISSED_BELL_EPOCH_KEY, default = 0L)
+
+    suspend fun setLastDismissedBellEpochSeconds(value: Long) {
+        dataStore.setValue(LAST_DISMISSED_BELL_EPOCH_KEY, value)
+    }
+
     // custom app color
     val appColorMode =
         dataStore.getValue(key = APP_COLOR_MODE_KEY, default = AppColorMode.DEFAULT.name)
@@ -439,6 +462,10 @@ class DefaultPreferencesRepository(
         private val NOTIFICATION_INTERVAL_KEY = stringPreferencesKey("notification_interval")
         private val LAST_NOTIFICATION_CREATED_AT_KEY =
             intPreferencesKey("last_notification_created_at")
+        private val LAST_ANIMATED_BELL_NOTIFICATION_ID_KEY =
+            intPreferencesKey("last_animated_bell_notification_id")
+        private val LAST_DISMISSED_BELL_EPOCH_KEY =
+            longPreferencesKey("last_dismissed_bell_epoch")
 
         private val APP_COLOR_MODE_KEY = stringPreferencesKey("app_color_mode")
         private val APP_COLOR_KEY = stringPreferencesKey("app_color")
