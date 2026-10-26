@@ -87,6 +87,7 @@ val exampleCommonMediaListEntry = CommonMediaListEntry(
         nextAiringEpisode = CommonMediaListEntry.NextAiringEpisode(
             __typename = "",
             episode = 3,
+            airingAt = 1725018922,
             timeUntilAiring = 1203239,
             id = 0,
         ),

@@ -271,39 +271,46 @@ private fun UserMediaListHostContent(
                 targetValue = if (isScrolled) 4.dp else 0.dp,
                 label = "headerElevation"
             )
-            UserMediaListView(
-                uiState = uiState,
-                event = event,
-                isCompactScreen = isCompactScreen,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
-                contentPadding = if (!uiState.isMyList)
-                    PaddingValues(bottom = 58.dp + padding.calculateBottomPadding())
-                else PaddingValues(bottom = 58.dp),
-                defaultNovelTab = defaultNovelTab,
-                navActionManager = navActionManager,
-                onShowEditSheet = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    event?.selectItem(it)
-                    showEditSheet = true
-                },
-                lazyListState = listState,
-                lazyGridState = gridState,
-                stickyHeaderContent = {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = headerColor,
-                        shadowElevation = headerElevation
-                    ) {
-                        FilterBlock(
-                            uiState = uiState,
-                            isSearchFocused = isSearchFocused,
-                            event = event
-                        )
+            ListAiringClock(
+                enabled = uiState.mediaType == MediaType.ANIME &&
+                    uiState.entries.any { it.media?.nextAiringEpisode != null },
+                entries = uiState.entries,
+                onAiringDue = { event?.refreshList() },
+            ) {
+                UserMediaListView(
+                    uiState = uiState,
+                    event = event,
+                    isCompactScreen = isCompactScreen,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
+                    contentPadding = if (!uiState.isMyList)
+                        PaddingValues(bottom = 58.dp + padding.calculateBottomPadding())
+                    else PaddingValues(bottom = 58.dp),
+                    defaultNovelTab = defaultNovelTab,
+                    navActionManager = navActionManager,
+                    onShowEditSheet = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        event?.selectItem(it)
+                        showEditSheet = true
+                    },
+                    lazyListState = listState,
+                    lazyGridState = gridState,
+                    stickyHeaderContent = {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = headerColor,
+                            shadowElevation = headerElevation
+                        ) {
+                            FilterBlock(
+                                uiState = uiState,
+                                isSearchFocused = isSearchFocused,
+                                event = event
+                            )
+                        }
                     }
-                }
-            )
+                )
+            }
         }//: Column
     }//: Scaffold
 }

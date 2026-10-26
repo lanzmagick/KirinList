@@ -11,7 +11,6 @@ import com.axiel7.anihyou.core.model.media.episodesBehind
 import com.axiel7.anihyou.core.model.media.isBehind
 import com.axiel7.anihyou.core.network.fragment.CommonMediaListEntry
 import com.axiel7.anihyou.core.resources.R
-import com.axiel7.anihyou.core.ui.utils.ComposeDateUtils.secondsToLegibleText
 
 @Composable
 fun AiringScheduleText(
@@ -33,16 +32,21 @@ fun AiringScheduleText(
                     )
                 } else ""
             } else {
+                // The original behind text above stays untouched. Only the airing label
+                // reads the shared ticking clock, so hidden countdowns do no UI work.
+                val secondsLeft = (nextAiringEpisode.airingAt.toLong() -
+                    LocalAiringEpochSeconds.current).coerceAtLeast(0L)
+                val airingCountdown = secondsLeft.toAiringCountdownText()
                 if (item.media?.basicMediaDetails?.episodes == 1) {
                     stringResource(
                         R.string.airing_in,
-                        nextAiringEpisode.timeUntilAiring.toLong().secondsToLegibleText()
+                        airingCountdown
                     )
                 } else {
                     stringResource(
                         R.string.episode_in_time,
                         nextAiringEpisode.episode,
-                        nextAiringEpisode.timeUntilAiring.toLong().secondsToLegibleText()
+                        airingCountdown
                     )
                 }
             },
@@ -53,4 +57,20 @@ fun AiringScheduleText(
             textAlign = textAlign,
         )
     }
+}
+
+/** Compact units fit beside anime titles, including a seconds field that ticks live. */
+private fun Long.toAiringCountdownText(): String {
+    val left = coerceAtLeast(0L)
+    val days = left / 86400L
+    val hours = (left % 86400L) / 3600L
+    val minutes = (left % 3600L) / 60L
+    val seconds = left % 60L
+
+    return buildList {
+        if (days > 0L) add("${days}d")
+        if (days > 0L || hours > 0L) add("${hours}h")
+        add("${minutes}m")
+        add("${seconds}s")
+    }.joinToString(" ")
 }
