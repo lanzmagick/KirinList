@@ -66,7 +66,7 @@ jobs:
             - Original KirinList animated RGB fill and outline for anime/manga list buttons.
             - Multi-color chapter and episode progress stages.
             - Realtime airing countdown with the existing episodes-behind logic preserved.
-            - New-notification bell shake, pulse dot, and persistent one-time attention.
+            - New-notification bell shake, pulse dot, and persistent dismissal across app relaunches.
             - Lightweight glossy-glass reflections across image thumbnails.
 
             Universal FOSS debug APK for testing on Android 7.0 and newer.

@@ -109,7 +109,8 @@ class HomeViewModel(
             lastBellPressedAtSeconds,
             defaultPreferencesRepository.lastDismissedBellEpochSeconds.first(),
         )
-        if (latest.createdAt != null && latest.createdAt.toLong() <= dismissedAt) {
+        val latestCreatedAt = latest.createdAt
+        if (latestCreatedAt != null && latestCreatedAt.toLong() <= dismissedAt) {
             if (latestId > previousId) {
                 lastObservedNotificationId = latestId
                 defaultPreferencesRepository.setLastAnimatedBellNotificationId(latestId)
