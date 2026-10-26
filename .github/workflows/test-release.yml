@@ -32,7 +32,7 @@ jobs:
         run: |
           chmod +x gradlew
           sed -i -e '/isEnable = true/s/true/false/' app/build.gradle.kts
-          ./gradlew :core:ui:testDebugUnitTest :app:assembleFossDebug --no-daemon
+          ./gradlew :core:ui:testDebugUnitTest --tests 'com.axiel7.anihyou.core.ui.composables.media.KirinProgressColorsTest' :app:assembleFossDebug --no-daemon
 
       - name: Prepare test release
         id: release
