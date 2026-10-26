@@ -58,6 +58,17 @@ fun VideoThumbnailItem(
                 .fillMaxSize()
                 .background(banner_shadow_color)
         )
+        if (!imageUrl.isNullOrBlank()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
+                    .glassThumbnailFinish(
+                        shape = RoundedCornerShape(8.dp),
+                        strength = 0.85f,
+                    )
+            )
+        }
         Icon(
             painter = painterResource(R.drawable.play_circle_40),
             contentDescription = "play",

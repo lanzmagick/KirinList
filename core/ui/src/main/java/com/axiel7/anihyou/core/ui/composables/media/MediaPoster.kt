@@ -45,6 +45,7 @@ fun MediaPoster(
     contentScale: ContentScale = ContentScale.Crop,
     modifier: Modifier
 ) {
+    val posterShape = RoundedCornerShape(8.dp)
     AsyncImage(
         model = url,
         contentDescription = "poster",
@@ -56,15 +57,19 @@ fun MediaPoster(
             .then(
                 if (showShadow) Modifier
                     .padding(start = 2.dp, end = 2.dp, bottom = 4.dp)
-                    .shadow(2.dp, shape = RoundedCornerShape(8.dp))
+                    .shadow(2.dp, shape = posterShape)
                 else Modifier
             )
-            .clip(RoundedCornerShape(8.dp))
+            .clip(posterShape)
             .then(
                 if (enableBlur && isBlurCompatible)
                     Modifier.hazeBlur(input = HazeInput.Content, expandLayerBounds = false)
                 else if (enableBlur) Modifier.spoilerPlaceholder(true)
                 else Modifier
+            )
+            .then(
+                if (url.isNullOrBlank()) Modifier
+                else Modifier.glassThumbnailFinish(shape = posterShape)
             )
     )
 }

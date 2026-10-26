@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.axiel7.anihyou.core.resources.R
+import com.axiel7.anihyou.core.ui.composables.media.glassThumbnailFinish
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
 const val PERSON_IMAGE_SIZE_VERY_SMALL = 30
@@ -44,6 +45,10 @@ fun PersonImage(
                 else Modifier
             )
             .clip(CircleShape)
+            .then(
+                if (url.isNullOrBlank()) Modifier
+                else Modifier.glassThumbnailFinish(shape = CircleShape, strength = 0.60f)
+            )
     )
 }
 
