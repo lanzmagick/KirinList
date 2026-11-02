@@ -1,78 +1,78 @@
-name: KirinList Test Release
+
+name: KirinList Manual APK Release
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - .github/workflows/test-release.yml
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: kirinlist-test-release
+  group: kirinlist-manual-build
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: temurin
 
-      - name: Test progress colors and build universal FOSS APK
+      - name: Build Universal FOSS APK
         run: |
           chmod +x gradlew
-          sed -i -e '/isEnable = true/s/true/false/' app/build.gradle.kts
-          ./gradlew :core:ui:testDebugUnitTest --tests 'com.axiel7.anihyou.core.ui.composables.media.KirinProgressColorsTest' :app:assembleFossDebug --no-daemon
 
-      - name: Prepare test release
-        id: release
+          sed -i -e '/isEnable = true/s/true/false/' app/build.gradle.kts
+
+          ./gradlew :app:assembleFossDebug --no-daemon
+
+      - name: Prepare APK
+        id: apk
         run: |
           VERSION=$(sed -n 's/^name *= *//p' version.properties | tr -d '\r')
           SHORT_SHA=${GITHUB_SHA:0:7}
-          TAG="test-${VERSION}-${SHORT_SHA}"
-          APK_NAME="KirinList-${VERSION}-test-${SHORT_SHA}.apk"
-          shopt -s nullglob
+
+          mkdir -p release-apk
+
           APK_FILES=(app/build/outputs/apk/foss/debug/*.apk)
+
           if [ "${#APK_FILES[@]}" -ne 1 ]; then
             echo "Expected one universal APK, found ${#APK_FILES[@]}"
             exit 1
           fi
-          mkdir -p release-apk
+
+          APK_NAME="KirinList-${VERSION}-${SHORT_SHA}.apk"
+
           cp "${APK_FILES[0]}" "release-apk/${APK_NAME}"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+          echo "name=${APK_NAME}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Publish test pre-release
-        uses: softprops/action-gh-release@v3
+      - name: Publish APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.release.outputs.tag }}
+          tag_name: manual-${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: KirinList ${{ steps.release.outputs.version }} - Border RGB Only Test
+          name: KirinList APK
           prerelease: true
+          make_latest: false
           fail_on_unmatched_files: true
           files: release-apk/*.apk
           body: |
-            KirinList UI preview build, including:
-            - Two independent Settings switches for progress colors and FAB RGB border.
-            - The Anime/Manga list FAB uses its normal app-theme fill without inner RGB.
-            - Tap the Anime/Manga list FAB to shift its border RGB colors.
-            - Fix the rectangular inner background on the All list button by drawing one rounded FAB surface.
-            - Multi-color chapter, volume and episode stages in Standard, Compact, Grid and Minimal list styles.
-            - Count-based color stages for entries whose total episodes/chapters are unknown; zero progress remains unchanged.
-            - Realtime airing countdown with the existing episodes-behind logic preserved.
-            - New-notification bell shake, pulse dot, and persistent dismissal across app relaunches.
-            - Lightweight glossy-glass reflections across image thumbnails.
+            KirinList Manual Build
 
-            Universal FOSS debug APK for testing on Android 7.0 and newer.
+            Version: ${{ steps.apk.outputs.version }}
 
-            Source commit: ${{ github.sha }}
+            Universal FOSS Debug APK.
+            Built from commit: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
