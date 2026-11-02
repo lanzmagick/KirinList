@@ -59,7 +59,8 @@ fun CurrentListItem(
     val scoreFormat = LocalScoreFormat.current
     val blurAdult = LocalBlurAdult.current
     val singleEpisode =
-        item.media?.basicMediaDetails?.type == MediaType.ANIME && (item.media?.basicMediaDetails?.episodes == 1)
+        item.media?.basicMediaDetails?.type == MediaType.ANIME &&
+            (item.media?.basicMediaDetails?.episodes == 1)
 
     Surface(
         shape = MaterialTheme.shapes.large,
@@ -81,14 +82,14 @@ fun CurrentListItem(
             Box {
                 MediaPoster(
                     url = item.media?.coverImage?.large,
-                    enableBlur = blurAdult && item.media?.basicMediaDetails?.isAdult == true,
+                    enableBlur = blurAdult &&
+                        item.media?.basicMediaDetails?.isAdult == true,
                     showShadow = false,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(
-                            width = MEDIA_POSTER_COMPACT_WIDTH.dp,
-                            height = MEDIA_POSTER_COMPACT_HEIGHT.dp
-                        )
+                    modifier = Modifier.size(
+                        width = MEDIA_POSTER_COMPACT_WIDTH.dp,
+                        height = MEDIA_POSTER_COMPACT_HEIGHT.dp
+                    )
                 )
 
                 if (item.basicMediaListEntry.score?.isGreaterThanZero() == true) {
@@ -110,18 +111,22 @@ fun CurrentListItem(
                 }
             }
 
-            Box(
+            Row(
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .weight(1f)
-                    .fillMaxHeight()
+                    .fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                        text = item.media?.basicMediaDetails
+                            ?.title?.userPreferred.orEmpty(),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodyLarge,
                         overflow = TextOverflow.Ellipsis,
@@ -141,9 +146,8 @@ fun CurrentListItem(
                     )
                 }
 
-                // +1 button: centered vertically on Home
                 IncrementOneButton(
-                    modifier = Modifier.align(Alignment.CenterEnd),
+                    modifier = Modifier.padding(start = 8.dp),
                     onClickPlus = onClickPlus,
                     blockPlus = blockPlus,
                     enabled = isPlusEnabled,
