@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -59,6 +60,7 @@ fun CurrentListItem(
     val blurAdult = LocalBlurAdult.current
     val singleEpisode =
         item.media?.basicMediaDetails?.type == MediaType.ANIME && (item.media?.basicMediaDetails?.episodes == 1)
+
     Surface(
         shape = MaterialTheme.shapes.large,
         color = Color.Transparent,
@@ -108,41 +110,45 @@ fun CurrentListItem(
                 }
             }
 
-            Column(
-                modifier = Modifier.padding(start = 16.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+            Box(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(1f)
+                    .fillMaxHeight()
             ) {
-                Text(
-                    text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.bodyLarge,
-                    overflow = TextOverflow.Ellipsis,
-                    minLines = 2,
-                    maxLines = 2
-                )
-                
-                AiringScheduleText(
-                    item = item,
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
+                    Text(
+                        text = item.media?.basicMediaDetails?.title?.userPreferred.orEmpty(),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodyLarge,
+                        overflow = TextOverflow.Ellipsis,
+                        minLines = 2,
+                        maxLines = 2
+                    )
+
+                    AiringScheduleText(
+                        item = item,
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
                     MediaProgressIndicator(
                         item = item,
                         singleEpisode = singleEpisode
                     )
-                    IncrementOneButton(
-                        onClickPlus = onClickPlus,
-                        blockPlus = blockPlus,
-                        enabled = isPlusEnabled,
-                        singleEpisode = singleEpisode
-                    )
                 }
+
+                // +1 button: centered vertically on Home
+                IncrementOneButton(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    onClickPlus = onClickPlus,
+                    blockPlus = blockPlus,
+                    enabled = isPlusEnabled,
+                    singleEpisode = singleEpisode
+                )
             }
         }
     }
@@ -191,8 +197,8 @@ fun CurrentListItemPlaceholder(
                 modifier = Modifier.defaultPlaceholder(visible = true),
                 fontSize = 15.sp,
             )
-        }//:Column
-    }//:Row
+        }
+    }
 }
 
 @Preview
