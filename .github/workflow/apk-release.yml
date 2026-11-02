@@ -1,5 +1,4 @@
-
-name: KirinList Manual APK Release
+name: KirinList APK Release
 
 on:
   workflow_dispatch:
@@ -8,7 +7,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: kirinlist-manual-build
+  group: kirinlist-build
   cancel-in-progress: false
 
 jobs:
@@ -40,6 +39,11 @@ jobs:
           VERSION=$(sed -n 's/^name *= *//p' version.properties | tr -d '\r')
           SHORT_SHA=${GITHUB_SHA:0:7}
 
+          if [ -z "$VERSION" ]; then
+            echo "Version not found!"
+            exit 1
+          fi
+
           mkdir -p release-apk
 
           APK_FILES=(app/build/outputs/apk/foss/debug/*.apk)
@@ -59,20 +63,20 @@ jobs:
       - name: Publish APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: manual-${{ github.run_number }}
+          tag_name: ${{ steps.apk.outputs.version }}-${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: KirinList APK
+          name: KirinList ${{ steps.apk.outputs.version }}
           prerelease: true
           make_latest: false
           fail_on_unmatched_files: true
           files: release-apk/*.apk
           body: |
-            KirinList Manual Build
+            KirinList ${{ steps.apk.outputs.version }}
 
-            Version: ${{ steps.apk.outputs.version }}
+            APK: ${{ steps.apk.outputs.name }}
 
             Universal FOSS Debug APK.
             Built from commit: ${{ github.sha }}
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
