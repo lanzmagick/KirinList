@@ -2,6 +2,14 @@ package com.axiel7.anihyou.feature.profile
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -157,16 +166,19 @@ private fun ProfileContent(
                 .fillMaxSize()
         ) {
             if (uiState.userInfo != null) {
-                ConnectedButtonGroup(
-                    items = ProfileInfoType.tabRows,
-                    modifier = Modifier.padding(
-                        start = 8.dp,
-                        end = 8.dp,
-                        bottom = 8.dp
-                    ),
+                // Kod menu asal dikekalkan sebagai komen, tidak dibuang.
+                // ConnectedButtonGroup(
+                //     items = ProfileInfoType.tabRows,
+                //     modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+                //     selectedIndex = selectedTabIndex,
+                //     onItemSelection = { selectedTabIndex = it }
+                // )
+
+                ProfileTabNavigation(
                     selectedIndex = selectedTabIndex,
-                    onItemSelection = { selectedTabIndex = it }
+                    onItemSelection = { selectedTabIndex = it },
                 )
+
                 AnimatedContent(
                     targetState = ProfileInfoType.tabRows[selectedTabIndex].value
                 ) { tab ->
@@ -221,8 +233,69 @@ private fun ProfileContent(
                     }
                 }
             }
-        }//: Column
-    }//: Scaffold
+        }
+    }
+}
+
+@Composable
+private fun ProfileTabNavigation(
+    selectedIndex: Int,
+    onItemSelection: (Int) -> Unit,
+) {
+    val labels = listOf("About", "Activity", "Stats", "Favorites", "Social")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ProfileInfoType.tabRows.forEachIndexed { index, item ->
+            val selected = selectedIndex == index
+
+            Column(
+                modifier = Modifier
+                    .width(66.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .clickable { onItemSelection(index) }
+                    .padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    painter = painterResource(item.icon!!),
+                    contentDescription = labels[index],
+                    tint = if (selected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(23.dp),
+                )
+
+                Spacer(Modifier.height(5.dp))
+
+                Text(
+                    text = labels[index],
+                    color = if (selected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 11.sp,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                    maxLines = 1,
+                )
+
+                Spacer(Modifier.height(7.dp))
+
+                Box(
+                    modifier = Modifier
+                        .width(25.dp)
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primary
+                            else Color.Transparent
+                        )
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -233,6 +306,7 @@ private fun MainProfileInfo(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+
     Row(modifier = modifier) {
         PersonImage(
             url = uiState.userInfo?.avatar?.large,
@@ -264,6 +338,7 @@ private fun MainProfileInfo(
                     fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
+
                 uiState.userInfo?.donatorTier?.let { donatorTier ->
                     if (donatorTier > 1) {
                         Text(
@@ -274,6 +349,7 @@ private fun MainProfileInfo(
                         )
                     }
                 }
+
                 if (uiState.userInfo?.isFollower == true) {
                     Text(
                         text = stringResource(R.string.follows_you),
@@ -281,7 +357,7 @@ private fun MainProfileInfo(
                         fontSize = 14.sp
                     )
                 }
-            }//:Column
+            }
 
             if (uiState.isMyProfile) {
                 FilledTonalIconButton(
@@ -311,7 +387,7 @@ private fun MainProfileInfo(
                     }
                 }
             }
-        }//: Row
+        }
     }
 }
 
