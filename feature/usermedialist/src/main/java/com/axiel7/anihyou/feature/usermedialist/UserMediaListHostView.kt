@@ -553,7 +553,10 @@ private fun FloatingActionButton(
     Row(
         modifier = Modifier
             .animateContentSize()
-            .shadow(6.dp, fabShape)
+            // Kod asal:
+            // .shadow(6.dp, fabShape)
+            // FIX: Shadow hanya untuk Dark Theme.
+            .then(if (isDarkTheme) Modifier.shadow(6.dp, fabShape) else Modifier)
             .clip(fabShape)
             .background(color = originalFill, shape = fabShape)
             .border(width = 1.5.dp, brush = borderBrush, shape = fabShape)
