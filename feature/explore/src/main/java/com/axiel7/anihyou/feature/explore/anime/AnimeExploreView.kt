@@ -13,12 +13,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -26,9 +26,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -158,6 +156,7 @@ private fun AnimeDiscoverContent(
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         AssistChip(
+                            shape = RoundedCornerShape(14.dp),
                             onClick = {
                                 navActionManager.toAnimeSeason(
                                     uiState.currentSeason.year,
@@ -175,6 +174,7 @@ private fun AnimeDiscoverContent(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         AssistChip(
+                            shape = RoundedCornerShape(14.dp),
                             onClick = { navActionManager.toCalendar() },
                             label = { Text(text = stringResource(R.string.calendar)) },
                             leadingIcon = {
@@ -187,6 +187,7 @@ private fun AnimeDiscoverContent(
                         Spacer(modifier = Modifier.width(12.dp))
                         ChartType.animeCharts.forEach { chartType ->
                             AssistChip(
+                                shape = RoundedCornerShape(14.dp),
                                 onClick = { navActionManager.toMediaChart(chartType) },
                                 label = { Text(text = chartType.localized()) },
                                 leadingIcon = {
@@ -217,28 +218,32 @@ private fun AnimeDiscoverContent(
                                     event?.selectItem(details, listEntry)
                                     showEditSheetAction()
                                 },
-                                navigateToCalendar = navActionManager::toCalendar,
                                 navigateToMediaDetails = navActionManager::toMediaDetails,
                             )
                         }
 
                         AnimeDiscoverInfo.THIS_SEASON -> {
-                            LaunchedEffect(uiState.nowAnimeSeason) {
-                                event?.fetchThisSeasonAnime()
+                            LaunchedEffect(uiState.currentSeason) {
+                                event?.fetchSeasonAnime()
                             }
                             SeasonAnimeContent(
-                                animeSeason = uiState.nowAnimeSeason,
-                                seasonAnime = uiState.thisSeasonAnime,
-                                isLoading = uiState.isLoadingThisSeason,
-                                isNextSeason = false,
-                                onLongClickItem = {
-                                    event?.selectItem(
-                                        details = it.basicMediaDetails,
-                                        listEntry = it.mediaListEntry?.basicMediaListEntry,
+                                title = stringResource(
+                                    R.string.season_year,
+                                    uiState.currentSeason.season,
+                                    uiState.currentSeason.year
+                                ),
+                                media = uiState.seasonAnime,
+                                isLoading = uiState.isLoadingSeasonAnime,
+                                onClickHeader = {
+                                    navActionManager.toAnimeSeason(
+                                        uiState.currentSeason.year,
+                                        uiState.currentSeason.season
                                     )
+                                },
+                                onLongClickItem = { details, listEntry ->
+                                    event?.selectItem(details, listEntry)
                                     showEditSheetAction()
                                 },
-                                navigateToAnimeSeason = navActionManager::toAnimeSeason,
                                 navigateToMediaDetails = navActionManager::toMediaDetails,
                             )
                         }
@@ -248,13 +253,13 @@ private fun AnimeDiscoverContent(
                                 event?.fetchTrendingAnime()
                             }
                             DiscoverMediaContent(
-                                title = stringResource(R.string.trending_now),
+                                title = stringResource(R.string.trending_anime),
                                 media = uiState.trendingAnime,
                                 isLoading = uiState.isLoadingTrendingAnime,
                                 onLongClickItem = {
                                     event?.selectItem(
                                         details = it.basicMediaDetails,
-                                        listEntry = it.mediaListEntry?.basicMediaListEntry,
+                                        listEntry = it.mediaListEntry?.basicMediaListEntry
                                     )
                                     showEditSheetAction()
                                 },
@@ -269,22 +274,27 @@ private fun AnimeDiscoverContent(
                         }
 
                         AnimeDiscoverInfo.NEXT_SEASON -> {
-                            LaunchedEffect(uiState.nextAnimeSeason) {
+                            LaunchedEffect(uiState.currentSeason) {
                                 event?.fetchNextSeasonAnime()
                             }
                             SeasonAnimeContent(
-                                animeSeason = uiState.nextAnimeSeason,
-                                seasonAnime = uiState.nextSeasonAnime,
-                                isLoading = uiState.isLoadingNextSeason,
-                                isNextSeason = true,
-                                onLongClickItem = {
-                                    event?.selectItem(
-                                        details = it.basicMediaDetails,
-                                        listEntry = it.mediaListEntry?.basicMediaListEntry,
+                                title = stringResource(
+                                    R.string.season_year,
+                                    uiState.nextSeason.season,
+                                    uiState.nextSeason.year
+                                ),
+                                media = uiState.nextSeasonAnime,
+                                isLoading = uiState.isLoadingNextSeasonAnime,
+                                onClickHeader = {
+                                    navActionManager.toAnimeSeason(
+                                        uiState.nextSeason.year,
+                                        uiState.nextSeason.season
                                     )
+                                },
+                                onLongClickItem = { details, listEntry ->
+                                    event?.selectItem(details, listEntry)
                                     showEditSheetAction()
                                 },
-                                navigateToAnimeSeason = navActionManager::toAnimeSeason,
                                 navigateToMediaDetails = navActionManager::toMediaDetails,
                             )
                         }
@@ -300,7 +310,7 @@ private fun AnimeDiscoverContent(
                                 onLongClickItem = {
                                     event?.selectItem(
                                         details = it.basicMediaDetails,
-                                        listEntry = it.mediaListEntry?.basicMediaListEntry,
+                                        listEntry = it.mediaListEntry?.basicMediaListEntry
                                     )
                                     showEditSheetAction()
                                 },
@@ -322,7 +332,7 @@ private fun AnimeDiscoverContent(
                                 onLongClickItem = {
                                     event?.selectItem(
                                         details = it.basicMediaDetails,
-                                        listEntry = it.mediaListEntry?.basicMediaListEntry,
+                                        listEntry = it.mediaListEntry?.basicMediaListEntry
                                     )
                                     showEditSheetAction()
                                 },
@@ -344,25 +354,12 @@ private fun AnimeDiscoverContent(
 
 @Preview
 @Composable
-private fun AnimeDiscoverInfoPreview() {
-    val now = remember { LocalDateTime.now() }
+private fun AnimeDiscoverContentPreview() {
     AniHyouTheme {
-        Surface {
-            AnimeDiscoverContent(
-                isLoggedIn = true,
-                uiState = AnimeExploreUiState(
-                    infos = remember {
-                        mutableStateListOf(
-                            AnimeDiscoverInfo.AIRING,
-                            AnimeDiscoverInfo.THIS_SEASON,
-                            AnimeDiscoverInfo.TRENDING_ANIME
-                        )
-                    },
-                    nowAnimeSeason = now.currentAnimeSeason(),
-                    nextAnimeSeason = now.nextAnimeSeason(),
-                ),
-                event = null
-            )
-        }
+        AnimeDiscoverContent(
+            isLoggedIn = false,
+            uiState = AnimeExploreUiState(),
+            event = null
+        )
     }
 }
