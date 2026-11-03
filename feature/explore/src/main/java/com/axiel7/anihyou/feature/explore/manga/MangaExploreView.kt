@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -115,11 +114,7 @@ fun MangaDiscoverContent(
         )
     }
 
-    ErrorDialogHandler(
-        uiState,
-        onDismiss = { event?.onErrorDisplayed() },
-        isLoggedIn = isLoggedIn
-    )
+    ErrorDialogHandler(uiState, onDismiss = { event?.onErrorDisplayed() }, isLoggedIn = isLoggedIn)
 
     Scaffold(
         modifier = modifier,
@@ -154,13 +149,8 @@ fun MangaDiscoverContent(
                     ) {
                         ChartType.mangaCharts.forEach { chartType ->
                             AssistChip(
-                                shape = RoundedCornerShape(14.dp),
-                                onClick = {
-                                    navActionManager.toMediaChart(chartType)
-                                },
-                                label = {
-                                    Text(text = chartType.localized())
-                                },
+                                onClick = { navActionManager.toMediaChart(chartType) },
+                                label = { Text(text = chartType.localized()) },
                                 leadingIcon = {
                                     Icon(
                                         painter = painterResource(chartType.icon()),
@@ -216,9 +206,7 @@ fun MangaDiscoverContent(
                                     showEditSheetAction()
                                 },
                                 onClickHeader = {
-                                    navActionManager.toMediaChart(
-                                        ChartType.POPULAR_MANGA
-                                    )
+                                    navActionManager.toMediaChart(ChartType.POPULAR_MANGA)
                                 },
                                 navigateToMediaDetails = navActionManager::toMediaDetails,
                             )
@@ -240,9 +228,7 @@ fun MangaDiscoverContent(
                                     showEditSheetAction()
                                 },
                                 onClickHeader = {
-                                    navActionManager.toMediaChart(
-                                        ChartType.POPULAR_MANHWA
-                                    )
+                                    navActionManager.toMediaChart(ChartType.POPULAR_MANHWA)
                                 },
                                 navigateToMediaDetails = navActionManager::toMediaDetails,
                             )
