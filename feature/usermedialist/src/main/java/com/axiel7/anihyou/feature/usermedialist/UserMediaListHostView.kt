@@ -71,6 +71,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -555,8 +556,8 @@ private fun FloatingActionButton(
             .animateContentSize()
             // Kod asal:
             // .shadow(6.dp, fabShape)
-            // FIX: Shadow hanya untuk Dark Theme.
-            .then(if (isDarkTheme) Modifier.shadow(6.dp, fabShape) else Modifier)
+            // Shadow hanya muncul apabila tema gelap
+            .then(if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Modifier.shadow(6.dp, fabShape) else Modifier)
             .clip(fabShape)
             .background(color = originalFill, shape = fabShape)
             .border(width = 1.5.dp, brush = borderBrush, shape = fabShape)
