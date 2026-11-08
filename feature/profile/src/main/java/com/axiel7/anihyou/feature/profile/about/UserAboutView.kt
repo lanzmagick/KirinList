@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.axiel7.anihyou.core.network.type.MediaType
 import com.axiel7.anihyou.core.resources.R
+import com.axiel7.anihyou.feature.profile.ActivityHistoryEntry
 import com.axiel7.anihyou.core.ui.composables.webview.HtmlWebView
 import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 
@@ -33,6 +34,7 @@ import com.axiel7.anihyou.core.ui.theme.AniHyouTheme
 @Composable
 fun UserAboutView(
     aboutHtml: String?,
+    activityHistory: List<ActivityHistoryEntry> = emptyList(),
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     onRefresh: () -> Unit,
@@ -92,7 +94,9 @@ fun UserAboutView(
                 )
             } else {
                 Box(
-                    modifier = modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     if (isLoading)
@@ -101,6 +105,13 @@ fun UserAboutView(
                         Text(text = stringResource(R.string.no_description))
                 }
             }
+
+            ActivityHistoryHeatmap(
+                history = activityHistory,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            )
         }
     }
 }
