@@ -29,6 +29,12 @@
     <string name="summer">Summer</string>
     <string name="fall">Fall</string>
     <string name="profile">Profile</string>
+    <string name="activity_history">Activity History</string>
+    <string name="activity_history_last_six_months">Last 6 months</string>
+    <plurals name="activity_count">
+        <item quantity="one">%d activity</item>
+        <item quantity="other">%d activities</item>
+    </plurals>
     <string name="trending_now">Trending Now</string>
     <string name="next_season">Next Season</string>
     <string name="trending_manga">Trending Manga</string>
