@@ -1,6 +1,14 @@
 name: KirinList APK Release
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/apk-release.yml'
+      - 'feature/profile/**'
+      - 'core/network/src/main/graphql/operations/viewer/ViewerUserInfo.graphql'
+      - 'core/resources/src/main/res/values/strings.xml'
   workflow_dispatch:
 
 permissions:
