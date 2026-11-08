@@ -24,4 +24,11 @@ fragment UserInfo on User {
     siteUrl
     donatorBadge
     donatorTier
+    stats {
+        activityHistory {
+            date
+            amount
+            level
+        }
+    }
 }
