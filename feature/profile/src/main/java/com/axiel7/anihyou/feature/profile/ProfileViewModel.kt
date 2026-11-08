@@ -9,6 +9,7 @@ import com.axiel7.anihyou.core.domain.repository.DefaultPreferencesRepository
 import com.axiel7.anihyou.core.domain.repository.LikeRepository
 import com.axiel7.anihyou.core.domain.repository.UserRepository
 import com.axiel7.anihyou.core.model.activity.updateLikeStatus
+import com.axiel7.anihyou.core.network.fragment.UserInfo
 import com.axiel7.anihyou.core.ui.common.navigation.Route
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
@@ -21,6 +22,16 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
+
+private fun UserInfo?.toActivityHistoryEntries(): List<ActivityHistoryEntry> =
+    this?.stats?.activityHistory.orEmpty().mapNotNull { item ->
+        val date = item?.date ?: return@mapNotNull null
+        ActivityHistoryEntry(
+            date = date,
+            amount = item.amount ?: 0,
+            level = item.level ?: 0,
+        )
+    }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
@@ -47,6 +58,7 @@ class ProfileViewModel(
                             defaultPreferencesRepository.saveProfileInfo(result.data!!)
                             it.copy(
                                 userInfo = result.data,
+                                activityHistory = result.data.toActivityHistoryEntries(),
                                 fetchFromNetwork = false,
                                 isLoading = false
                             )
@@ -72,6 +84,7 @@ class ProfileViewModel(
                     if (result is DataResult.Success) {
                         it.copy(
                             userInfo = result.data,
+                            activityHistory = result.data.toActivityHistoryEntries(),
                             isMyProfile = result.data?.id == myUserId.first(),
                             fetchFromNetwork = false,
                             isLoading = false,
