@@ -186,6 +186,7 @@ private fun ProfileContent(
                         ProfileInfoType.ABOUT ->
                             UserAboutView(
                                 aboutHtml = uiState.userInfo.about,
+                                activityHistory = uiState.activityHistory,
                                 modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                                 isLoading = uiState.isLoading,
                                 onRefresh = { event?.onRefresh() },
