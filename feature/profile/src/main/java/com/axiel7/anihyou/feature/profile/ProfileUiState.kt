@@ -11,6 +11,7 @@ import com.axiel7.anihyou.core.base.state.PagedUiState
 @Stable
 data class ProfileUiState(
     val userInfo: UserInfo? = null,
+    val activityHistory: List<ActivityHistoryEntry> = emptyList(),
     val activities: SnapshotStateList<UserActivityQuery.Activity> = mutableStateListOf(),
     val isLoadingActivity: Boolean = true,
     val isMyProfile: Boolean,
